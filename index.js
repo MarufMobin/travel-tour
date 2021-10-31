@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const { MongoClient,ObjectId } = require('mongodb');
 require('dotenv').config();
 const cors = require('cors');
 
@@ -18,18 +18,59 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 async function run() {
     try {
+        
         await client.connect();
-        const database = client.db('travelUsers');
-        const userCollection = database.collection('travels');
+        const database = client.db("travelUsers");
+        const myObjects = database.collection("travels");
+        // data get
+        app.get('/datas', async (req, res) => {
+            const inter = myObjects.find({})
+            const user = await inter.toArray()
+            res.send(user)
+        })
 
-        // Query for a movie that has the title 'Back to the Future'
-        // const query = { title: 'Back to the Future' };
-        // const movie = await movies.findOne(query);
-        // console.log(userCollection);
-        const cursor = await userCollection.find({}).toArray();
+        // data single get 
+        app.get('/datas/:id', async (req, res) => {
+            const id = req.params.id
+            console.log(id)
+            const quary = { _id: ObjectId(id) }
+            const result = await myObjects.findOne(quary)
+            res.send(result)
+        })
+        //put api 
+        app.put('/datas/:id', async (req, res) => {
+            const id = req.params.id;
+            const quare = { _id: ObjectId(id) }
+            const data = req.body
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    title: data.title,
+                    img: data.img,
+                    ticket: data.ticket,
+                    hotelP: data.hotelP,
+                    discription: data.discription,
+                    date: data.date,
+                },
+            };
+            console.log("data", data)
+            const result = await myObjects.updateOne(quare, updateDoc, options)
+            console.log('updating users', id)
+            res.json(result)
+        })
+        // data post
+        app.post('/datas', async (req, res) => {
+            console.log(req.body)
+            const result = await myObjects.insertOne(req.body)
+            res.json('result')
+        })
+        //delete user
+        app.delete('/data/:id', async (req, res) => {
+            const id = req.params.id;
+            const quare = { _id: ObjectId(id) }
+            const result = await myObjects.deleteOne(quare)
+            res.json(result)
 
-        app.get('/alloffers', (req, res) =>{
-            res.send(cursor)
         })
         
     } finally {
