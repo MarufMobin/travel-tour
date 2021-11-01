@@ -22,9 +22,17 @@ async function run() {
         await client.connect();
         const database = client.db("travelUsers");
         const myObjects = database.collection("travels");
+        const tourInform = database.collection("tripsCollection");
+
         // data get
         app.get('/datas', async (req, res) => {
             const inter = myObjects.find({})
+            const user = await inter.toArray()
+            res.send(user)
+        })
+        // User Manage data get
+        app.get('/tourdatas', async (req, res) => {
+            const inter = tourInform.find({})
             const user = await inter.toArray()
             res.send(user)
         })
@@ -37,6 +45,7 @@ async function run() {
             const result = await myObjects.findOne(quary)
             res.send(result)
         })
+        
         //put api 
         app.put('/datas/:id', async (req, res) => {
             const id = req.params.id;
@@ -61,14 +70,14 @@ async function run() {
         // data post
         app.post('/datas', async (req, res) => {
             console.log(req.body)
-            const result = await myObjects.insertOne(req.body)
-            res.json('result')
-        })
+            const result = await tourInform.insertOne(req.body)
+            res.json(result)
+        })  
         //delete user
         app.delete('/data/:id', async (req, res) => {
             const id = req.params.id;
             const quare = { _id: ObjectId(id) }
-            const result = await myObjects.deleteOne(quare)
+            const result = await tourInform.deleteOne(quare)
             res.json(result)
 
         })
